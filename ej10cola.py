@@ -1,115 +1,66 @@
-from typing import Any, Optional
+from queue_ import Queue
+from stack import Stack
 
-
-class Queue:
-    def __init__(self):
-        self.__elements = []
-
-    def arrive(self, value: Any) -> None:
-        self.__elements.append(value)
-
-    def attention(self) -> Optional[Any]:
-        return self.__elements.pop(0) if self.__elements else None
-
-    def size(self) -> int:
-        return len(self.__elements)
-    
-    def on_front(self) -> Optional[Any]:
-        return self.__elements[0] if self.__elements else None
-
-    def move_to_end(self) -> Optional[Any]:
-        if self.__elements:
-            value = self.attention()
-            self.arrive(value)
-            return value
-
-    def show(self):
-        for i in range(len(self.__elements)):
-            print(self.move_to_end())
-
-
-class Stack:
-    def __init__(self):
-        self.__elements = []
-
-    def push(self, value: Any) -> None:
-        self.__elements.append(value)
-
-    def pop(self) -> Optional[Any]:
-        return self.__elements.pop() if self.__elements else None
-
-    def size(self) -> int:
-        return len(self.__elements)
-
-    def on_top(self) -> Optional[Any]:
-        return self.__elements[-1] if self.__elements else None
-
-    def show(self):
-        aux = Stack()
-        while self.size() > 0:
-            value = self.pop()
-            print(value)
-            aux.push(value)
-        while aux.size() > 0:
-            self.push(aux.pop())
-
-# Cola de notificaciones simulada
+# Datos de ejemplo
 notificaciones = [
-    {"hora": "10:15", "app": "Twitter", "mensaje": "Aprendé Python ahora!"},
-    {"hora": "11:45", "app": "Facebook", "mensaje": "Tenés nuevos recuerdos"},
-    {"hora": "12:30", "app": "Instagram", "mensaje": "Nueva historia disponible"},
-    {"hora": "13:15", "app": "Twitter", "mensaje": "Python es lo más!"},
-    {"hora": "14:50", "app": "Facebook", "mensaje": "Nuevos eventos en tu zona"},
-    {"hora": "15:55", "app": "Twitter", "mensaje": "Curso de Java"},
-    {"hora": "16:10", "app": "WhatsApp", "mensaje": "Nuevo mensaje de Juan"},
-    {"hora": "11:43", "app": "Twitter", "mensaje": "Python para ciencia de datos"},
+    {"hora": "11:00", "app": "Facebook", "mensaje": "Recordatorio de evento"},
+    {"hora": "11:45", "app": "Twitter", "mensaje": "Nuevo curso de Python disponible"},
+    {"hora": "12:15", "app": "Instagram", "mensaje": "Nueva foto etiquetada"},
+    {"hora": "13:30", "app": "Facebook", "mensaje": "Publicación de amigo"},
+    {"hora": "14:00", "app": "Twitter", "mensaje": "Python es tendencia"},
+    {"hora": "15:00", "app": "WhatsApp", "mensaje": "Nuevo mensaje de grupo"},
+    {"hora": "16:00", "app": "Twitter", "mensaje": "Actualización disponible"},
 ]
 
 cola_notificaciones = Queue()
-for n in notificaciones:
-    cola_notificaciones.arrive(n)
+for notif in notificaciones:
+    cola_notificaciones.arrive(notif)
 
-# a) Eliminar todas las notificaciones de Facebook
+print("--- a) Eliminar notificaciones de Facebook ---")
 def eliminar_facebook(cola: Queue):
-    for _ in range(cola.size()):
-        noti = cola.on_front()
-        if noti["app"] != "Facebook":
-            cola.move_to_end()
-        else:
-            cola.attention()
+    aux = Queue()
+    while cola.size() > 0:
+        notif = cola.attention()
+        if notif["app"] != "Facebook":
+            aux.arrive(notif)
+    while aux.size() > 0:
+        cola.arrive(aux.attention())
 
-# b) Mostrar notificaciones de Twitter que contienen 'Python' sin perder datos
-def mostrar_twitter_python(cola: Queue):
-    print("Notificaciones de Twitter con 'Python':")
-    for _ in range(cola.size()):
-        noti = cola.on_front()
-        if noti["app"] == "Twitter" and "Python" in noti["mensaje"]:
-            print("-", noti)
-        cola.move_to_end()
-
-# c) Usar una pila para almacenar notificaciones entre 11:43 y 15:57 y contarlas
-def almacenar_en_pila_por_horario(cola: Queue):
-    pila = Stack()
-    for _ in range(cola.size()):
-        noti = cola.on_front()
-        if "11:43" <= noti["hora"] <= "15:57":
-            pila.push(noti)
-        cola.move_to_end()
-    print(f"Cantidad de notificaciones entre 11:43 y 15:57: {pila.size()}")
-
-# Ejecutar funciones
-print("Cola original:")
+eliminar_facebook(cola_notificaciones)
 cola_notificaciones.show()
 
-print("\n--- a) Eliminar Facebook ---")
-eliminar_facebook(cola_notificaciones)
+print("\n--- b) Mostrar notificaciones de Twitter con 'Python' ---")
+def mostrar_twitter_python(cola: Queue):
+    aux = Queue()
+    while cola.size() > 0:
+        notif = cola.attention()
+        if notif["app"] == "Twitter" and "Python" in notif["mensaje"]:
+            print(notif)
+        aux.arrive(notif)
+    while aux.size() > 0:
+        cola.arrive(aux.attention())
 
-print("\n--- b) Mostrar Twitter con 'Python' ---")
 mostrar_twitter_python(cola_notificaciones)
 
-print("\n--- c) Pila entre 11:43 y 15:57 ---")
-almacenar_en_pila_por_horario(cola_notificaciones)
+print("\n--- c) Notificaciones entre 11:43 y 15:57 (guardadas en una pila) ---")
+def en_rango(hora: str) -> bool:
+    return "11:43" <= hora <= "15:57"
 
-print("\nCola final:")
-cola_notificaciones.show()
+def notificaciones_en_rango(cola: Queue):
+    pila = Stack()
+    contador = 0
+    aux = Queue()
+    while cola.size() > 0:
+        notif = cola.attention()
+        if en_rango(notif["hora"]):
+            pila.push(notif)
+            contador += 1
+        aux.arrive(notif)
+    while aux.size() > 0:
+        cola.arrive(aux.attention())
+    return pila, contador
+
+pila_rango, cantidad = notificaciones_en_rango(cola_notificaciones)
+print(f"Cantidad de notificaciones entre 11:43 y 15:57: {cantidad}")
+
 
