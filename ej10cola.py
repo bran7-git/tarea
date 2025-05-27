@@ -35,7 +35,7 @@ class Stack:
         while aux_stack.size() > 0:
             self.push(aux_stack.pop())
 
-# Clase Queue (asumida del estilo del profe)
+
 class Queue:
 
     def __init__(self):
