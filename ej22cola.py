@@ -1,32 +1,6 @@
 from typing import Any, Optional
 
 
-class Stack:
-    def __init__(self):
-        self.__elements = []
-
-    def push(self, value: Any) -> None:
-        self.__elements.append(value)
-
-    def pop(self) -> Optional[Any]:
-        return self.__elements.pop() if self.__elements else None
-
-    def size(self) -> int:
-        return len(self.__elements)
-
-    def on_top(self) -> Optional[Any]:
-        return self.__elements[-1] if self.__elements else None
-
-    def show(self):
-        aux_stack = Stack()
-        while self.size() > 0:
-            value = self.pop()
-            print(value)
-            aux_stack.push(value)
-        while aux_stack.size() > 0:
-            self.push(aux_stack.pop())
-
-
 class Queue:
     def __init__(self):
         self.__elements = []
@@ -37,22 +11,24 @@ class Queue:
     def attention(self) -> Optional[Any]:
         return self.__elements.pop(0) if self.__elements else None
 
+    def size(self) -> int:
+        return len(self.__elements)
+    
     def on_front(self) -> Optional[Any]:
         return self.__elements[0] if self.__elements else None
 
-    def move_to_end(self) -> None:
-        if self.size() > 0:
-            self.arrive(self.attention())
-
-    def size(self) -> int:
-        return len(self.__elements)
+    def move_to_end(self) -> Optional[Any]:
+        if self.__elements:
+            value = self.attention()
+            self.arrive(value)
+            return value
 
     def show(self):
-        for value in self.__elements:
-            print(value)
+        for i in range(len(self.__elements)):
+            print(self.move_to_end())
 
-# Cola con personajes del MCU
-personajes_mcu = [
+# Cargar datos a la cola
+personajes = [
     {"personaje": "Tony Stark", "superheroe": "Iron Man", "genero": "M"},
     {"personaje": "Steve Rogers", "superheroe": "Capitán América", "genero": "M"},
     {"personaje": "Natasha Romanoff", "superheroe": "Black Widow", "genero": "F"},
@@ -63,69 +39,77 @@ personajes_mcu = [
 ]
 
 cola_personajes = Queue()
-for p in personajes_mcu:
+for p in personajes:
     cola_personajes.arrive(p)
 
-# A) Nombre del personaje de Capitana Marvel
-def personaje_de_capitana_marvel(cola: Queue):
+# a) Determinar el nombre del personaje de la superhéroe Capitana Marvel
+def buscar_personaje_por_superheroe(cola: Queue, nombre_heroe: str):
     for _ in range(cola.size()):
-        dato = cola.on_front()
-        if dato["superheroe"] == "Capitana Marvel":
-            print("a) Personaje de Capitana Marvel:", dato["personaje"])
+        p = cola.on_front()
+        if p["superheroe"] == nombre_heroe:
+            print(f"El personaje de {nombre_heroe} es {p['personaje']}")
         cola.move_to_end()
 
-# B) Superhéroes femeninos
-def superheroinas(cola: Queue):
-    print("b) Superhéroes femeninos:")
+# b) Mostrar los nombres de los superhéroes femeninos
+def mostrar_heroes_femeninos(cola: Queue):
+    print("Superhéroes femeninos:")
     for _ in range(cola.size()):
-        dato = cola.on_front()
-        if dato["genero"] == "F":
-            print("-", dato["superheroe"])
+        p = cola.on_front()
+        if p["genero"] == "F":
+            print("-", p["superheroe"])
         cola.move_to_end()
 
-# C) Personajes masculinos
-def personajes_masculinos(cola: Queue):
-    print("c) Personajes masculinos:")
+# c) Mostrar los nombres de los personajes masculinos
+def mostrar_personajes_masculinos(cola: Queue):
+    print("Personajes masculinos:")
     for _ in range(cola.size()):
-        dato = cola.on_front()
-        if dato["genero"] == "M":
-            print("-", dato["personaje"])
+        p = cola.on_front()
+        if p["genero"] == "M":
+            print("-", p["personaje"])
         cola.move_to_end()
 
-# D) Superhéroe de Scott Lang
-def superheroe_de_scott_lang(cola: Queue):
+# d) Determinar el nombre del superhéroe del personaje Scott Lang
+def buscar_heroe_por_personaje(cola: Queue, nombre_personaje: str):
     for _ in range(cola.size()):
-        dato = cola.on_front()
-        if dato["personaje"] == "Scott Lang":
-            print("d) Superhéroe de Scott Lang:", dato["superheroe"])
+        p = cola.on_front()
+        if p["personaje"] == nombre_personaje:
+            print(f"El superhéroe de {nombre_personaje} es {p['superheroe']}")
         cola.move_to_end()
 
-# E) Datos de los que empiezan con 'S'
-def nombres_con_s(cola: Queue):
-    print("e) Datos de personajes o superhéroes que comienzan con 'S':")
+# e) Mostrar todos los datos de los personajes o superhéroes que comienzan con 'S'
+def mostrar_datos_letra_s(cola: Queue):
+    print("Personajes o superhéroes que comienzan con 'S':")
     for _ in range(cola.size()):
-        dato = cola.on_front()
-        if dato["personaje"].startswith("S") or dato["superheroe"].startswith("S"):
-            print("-", dato)
+        p = cola.on_front()
+        if p["personaje"].startswith("S") or p["superheroe"].startswith("S"):
+            print("-", p)
         cola.move_to_end()
 
-# F) Si está Carol Danvers, mostrar su superhéroe
+# f) Determinar si Carol Danvers está en la cola e indicar su nombre de superhéroe
 def buscar_carol_danvers(cola: Queue):
-    encontrado = False
     for _ in range(cola.size()):
-        dato = cola.on_front()
-        if dato["personaje"] == "Carol Danvers":
-            encontrado = True
-            print("f) Carol Danvers se encuentra en la cola. Superhéroe:", dato["superheroe"])
+        p = cola.on_front()
+        if p["personaje"] == "Carol Danvers":
+            print("Carol Danvers está en la cola. Su superhéroe es", p["superheroe"])
         cola.move_to_end()
-    if not encontrado:
-        print("f) Carol Danvers no se encuentra en la cola.")
 
-# Ejecutar todas
-personaje_de_capitana_marvel(cola_personajes)
-superheroinas(cola_personajes)
-personajes_masculinos(cola_personajes)
-superheroe_de_scott_lang(cola_personajes)
-nombres_con_s(cola_personajes)
+# Ejecutar todas las funciones
+print("--- a) ---")
+buscar_personaje_por_superheroe(cola_personajes, "Capitana Marvel")
+
+print("\n--- b) ---")
+mostrar_heroes_femeninos(cola_personajes)
+
+print("\n--- c) ---")
+mostrar_personajes_masculinos(cola_personajes)
+
+print("\n--- d) ---")
+buscar_heroe_por_personaje(cola_personajes, "Scott Lang")
+
+print("\n--- e) ---")
+mostrar_datos_letra_s(cola_personajes)
+
+print("\n--- f) ---")
 buscar_carol_danvers(cola_personajes)
+
 
