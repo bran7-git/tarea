@@ -27,7 +27,7 @@ class Queue:
         for i in range(len(self.__elements)):
             print(self.move_to_end())
 
-# Clase Stack compatible
+
 class Stack:
     def __init__(self):
         self.__elements = []
