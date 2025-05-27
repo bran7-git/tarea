@@ -1,78 +1,126 @@
-from queue import Queue
-from datetime import datetime
+from typing import Any, Optional
 
-# Definimos una notificación como diccionario
-def crear_notificacion(hora, app, mensaje):
-    return {
-        "hora": hora,           # string formato HH:MM
-        "app": app.lower(),     # nombre de la aplicación en minúscula
-        "mensaje": mensaje
-    }
 
-# Cargar cola con notificaciones de ejemplo
-def cargar_notificaciones():
-    cola = Queue()
-    datos = [
-        crear_notificacion("10:30", "Facebook", "Nueva solicitud de amistad"),
-        crear_notificacion("11:45", "Twitter", "Python es genial"),
-        crear_notificacion("12:00", "Instagram", "Nueva historia disponible"),
-        crear_notificacion("13:15", "Twitter", "Aprende Python con nosotros"),
-        crear_notificacion("14:50", "Facebook", "Recordatorio de evento"),
-        crear_notificacion("15:30", "Twitter", "¿Te interesa Python?"),
-        crear_notificacion("16:10", "LinkedIn", "Nueva oferta de trabajo"),
-    ]
-    for n in datos:
-        cola.put(n)
-    return cola
+class Stack:
 
-# a. Eliminar notificaciones de Facebook
-def eliminar_facebook(cola):
-    nueva_cola = Queue()
-    while not cola.empty():
-        noti = cola.get()
-        if noti['app'] != 'facebook':
-            nueva_cola.put(noti)
-    return nueva_cola
+    def __init__(self):
+        self.__elements = []
 
-# b. Mostrar notificaciones de Twitter que contengan "Python"
-def mostrar_twitter_python(cola):
-    aux = Queue()
-    print("Notificaciones de Twitter con 'Python':")
-    while not cola.empty():
-        noti = cola.get()
-        if noti['app'] == 'twitter' and 'python' in noti['mensaje'].lower():
-            print(f"[{noti['hora']}] {noti['app'].capitalize()}: {noti['mensaje']}")
-        aux.put(noti)
-    # Restaurar la cola original
-    while not aux.empty():
-        cola.put(aux.get())
+    def push(self, value: Any) -> None:
+        self.__elements.append(value)
 
-# c. Usar pila para notificaciones entre 11:43 y 15:57
-def notificaciones_rango_horario(cola):
-    pila = []
-    aux = Queue()
-    hora_ini = datetime.strptime("11:43", "%H:%M")
-    hora_fin = datetime.strptime("15:57", "%H:%M")
-    while not cola.empty():
-        noti = cola.get()
-        hora_noti = datetime.strptime(noti["hora"], "%H:%M")
-        if hora_ini <= hora_noti <= hora_fin:
-            pila.append(noti)
-        aux.put(noti)
-    # Restaurar la cola
-    while not aux.empty():
-        cola.put(aux.get())
-    print(f"Cantidad de notificaciones entre 11:43 y 15:57: {len(pila)}")
+    def pop(self) -> Optional[Any]:
+        return (
+            self.__elements.pop()
+            if self.__elements
+            else None
+        )
 
-# Ejecución de prueba
-if __name__ == "__main__":
-    cola = cargar_notificaciones()
+    def size(self) -> int:
+        return len(self.__elements)
 
-    print("a) Eliminando notificaciones de Facebook...")
-    cola = eliminar_facebook(cola)
+    def on_top(self) -> Optional[Any]:
+        return (
+            self.__elements[-1]
+            if self.__elements
+            else None
+        )
 
-    print("\nb) Mostrando notificaciones de Twitter que contienen 'Python'...")
-    mostrar_twitter_python(cola)
+    def show(self):
+        aux_stack = Stack()
+        while self.size() > 0:
+            value = self.pop()
+            print(value)
+            aux_stack.push(value)
+        while aux_stack.size() > 0:
+            self.push(aux_stack.pop())
 
-    print("\nc) Cantidad de notificaciones entre 11:43 y 15:57...")
-    notificaciones_rango_horario(cola)
+# Clase Queue (asumida del estilo del profe)
+class Queue:
+
+    def __init__(self):
+        self.__elements = []
+
+    def arrive(self, value: Any) -> None:
+        self.__elements.append(value)
+
+    def attention(self) -> Optional[Any]:
+        return (
+            self.__elements.pop(0)
+            if self.__elements
+            else None
+        )
+
+    def on_front(self) -> Optional[Any]:
+        return (
+            self.__elements[0]
+            if self.__elements
+            else None
+        )
+
+    def move_to_end(self) -> None:
+        if self.size() > 0:
+            self.arrive(self.attention())
+
+    def size(self) -> int:
+        return len(self.__elements)
+
+    def show(self):
+        for value in self.__elements:
+            print(value)
+
+# Datos simulados
+notificaciones = [
+    {"hora": "10:00", "app": "Facebook", "mensaje": "Nuevo comentario"},
+    {"hora": "11:50", "app": "Twitter", "mensaje": "Aprendé Python con nosotros"},
+    {"hora": "12:30", "app": "Instagram", "mensaje": "Nueva historia"},
+    {"hora": "13:15", "app": "Facebook", "mensaje": "Nueva reacción"},
+    {"hora": "14:00", "app": "Twitter", "mensaje": "Python es tendencia"},
+    {"hora": "15:45", "app": "Whatsapp", "mensaje": "Nuevo mensaje"},
+    {"hora": "16:10", "app": "Twitter", "mensaje": "Hola mundo"},
+]
+
+cola_notificaciones = Queue()
+for n in notificaciones:
+    cola_notificaciones.arrive(n)
+
+# A) Eliminar todas las notificaciones de Facebook
+def eliminar_facebook(cola: Queue):
+    for _ in range(cola.size()):
+        notif = cola.on_front()
+        if notif["app"] != "Facebook":
+            cola.move_to_end()
+        else:
+            cola.attention()
+
+# B) Mostrar notificaciones de Twitter que contengan "Python", sin perder datos
+def mostrar_twitter_con_python(cola: Queue):
+    for _ in range(cola.size()):
+        notif = cola.on_front()
+        if notif["app"] == "Twitter" and "Python" in notif["mensaje"]:
+            print(notif)
+        cola.move_to_end()
+
+# C) Usar una pila para guardar notificaciones entre 11:43 y 15:57, y contarlas
+def contar_notificaciones_rango(cola: Queue):
+    pila = Stack()
+    for _ in range(cola.size()):
+        notif = cola.on_front()
+        if "11:43" <= notif["hora"] <= "15:57":
+            pila.push(notif)
+        cola.move_to_end()
+    print(f"Cantidad de notificaciones entre 11:43 y 15:57: {pila.size()}")
+
+# Mostrar cola original
+print("Cola original:")
+cola_notificaciones.show()
+
+print("\nA) Eliminando notificaciones de Facebook...")
+eliminar_facebook(cola_notificaciones)
+cola_notificaciones.show()
+
+print("\nB) Notificaciones de Twitter que contienen 'Python':")
+mostrar_twitter_con_python(cola_notificaciones)
+
+print("\nC) Contar notificaciones entre 11:43 y 15:57:")
+contar_notificaciones_rango(cola_notificaciones)
